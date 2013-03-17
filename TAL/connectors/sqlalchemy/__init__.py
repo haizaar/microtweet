@@ -24,7 +24,7 @@ class Connector(ConnectorBase):
 
 	@classmethod
 	def initialize(self, db_url):
-		self.engine = create_engine(db_url, echo=True) #FIXME: Remove echo=True
+		self.engine = create_engine(db_url)
 		m.Base.metadata.create_all(self.engine)
 		self.Session = sessionmaker(bind=self.engine)
 
@@ -40,7 +40,10 @@ class Connector(ConnectorBase):
 		user = m.User(username=username)
 		s = self.Session()
 		s.add(user)
-		s.commit()
+		try:
+			s.commit()
+		except IntegrityError:
+			raise exceptions.UserAlreadyExists("User %s already exists. Please try another username" % username)
 		return user.id
 
 	def post_tweet(self, user_id, tweet):

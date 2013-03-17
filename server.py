@@ -42,10 +42,13 @@ class MicroTweet(object):
 		self.tal = tal
 
 	def create_user(self, username):
-		return self.tal.create_user(username)
+		try:
+			return self.tal.create_user(username)
+		except TAL.exceptions.UserAlreadyExists, e:
+			abort(400, str(e))
 	
-	def post_tweet(self, user_id,text):
-		return self.tal.post_tweet(username)
+	def post_tweet(self, user_id, text):
+		return self.tal.post_tweet(user_id, text)
 
 	def follow(self, following_user_id, followed_user_id):
 		self.tal.follow(following_user_id, followed_user_id)
@@ -72,10 +75,10 @@ def require(d, *keys):
 def api_user():
 	require(request.json, "username")
 	username = request.json["username"]
-	app.logger.debug("username is: %s", userdata["username"])
+	app.logger.debug("username is: %s", username)
 	user_id = app.mt.create_user(username)
 
-	return jsonify( **dict(user_idr=user_id) )
+	return jsonify( **dict(user_id=user_id) )
 
 
 @app.route("/tweet", methods = ["GET", "POST"])
@@ -93,8 +96,10 @@ def api_tweets():
 
 	elif request.method == "POST":
 		require(request.json, "text")
+		require(request.json, "user_id")
 		text = request.json["text"]
-		tweet_id = app.mt.post_tweet(text)
+		user_id = request.json["user_id"]
+		tweet_id = app.mt.post_tweet(user_id, text)
 		return jsonify( **dict(tweet_id=tweet_id) )
 		
 	app.logger.error("Flask BUG! Unsupported HTTP method, but we should not get here!")
@@ -118,6 +123,7 @@ def api_friendship():
 	elif request.method == "DELETE":
 		app.mt.unfollow(request.json["user_id"], request.json["followed_user_id"])
 
+	return jsonify( **dict(ok=True) )
 
 # Setup
 ################################################################################

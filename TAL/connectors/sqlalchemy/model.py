@@ -15,10 +15,9 @@ class MyBase(object):
 		return cls.__name__.lower()
 
 	__table_args__ = {"mysql_engine": "InnoDB"}
-	#__mapper_args__ = {"always_refresh": True}
 
 	id =  Column(Integer, primary_key=True)
-	created_at = Column(DateTime, default=func.utc_timestamp(), index=True)
+	created_at = Column(DateTime, default=func.now(), index=True) # FIXME: Use time in UTC and not local
 
 	def to_dict(self):
 		d = dict()

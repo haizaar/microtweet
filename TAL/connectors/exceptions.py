@@ -6,3 +6,6 @@ class ImproperlyConfigured(Exception):
 class UnknownUser(Exception):
 	pass
 	
+class UserAlreadyExists(Exception):
+	pass
+	
